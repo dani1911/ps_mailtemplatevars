@@ -1,0 +1,56 @@
+.mailtplvarsmoduleconfig-header {
+	display: flex;
+	align-items: center;
+	gap: 3rem;
+}
+/* .adminsps .caret,
+.adminsps button i.icon-caret-down {
+	display: none;
+}
+
+.order-input-select {
+	max-width: 10rem;
+	min-width: 200px;
+	position: relative;
+}
+.order-input-text {
+	max-width: 6rem;
+	position: relative;
+}
+.order-input-text input {
+	text-align: right;
+}
+.order-input-select span#loader {
+	position: absolute;
+	top: 50%;
+	transform: translateY(-50%);
+	right: 2.25em;
+}
+.order-input-text span#loader {
+	position: absolute;
+	top: 50%;
+	transform: translate(20%, -50%);
+}
+.bootstrap input[type=text].db-success,
+.bootstrap select.db-success {
+	background-color: #70b580;
+	color: #fff;
+}
+.bootstrap input[type=text].db-error,
+.bootstrap select.db-error {
+	background-color: #f54c3e;
+	color: #fff;
+}
+#table-sps_order tbody i {
+	padding: .5em;
+}
+.is-bool i,
+#desc-posta_order-truck {
+	cursor: pointer;
+}
+#table-sps_order .icon-check {
+	color: #72c279;
+}
+#table-sps_order .icon-remove {
+	color: #e08f95;
+} */
