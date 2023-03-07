@@ -32,6 +32,7 @@
 $sql = [];
 
 $sql[] = 'DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'mailtplvars_subjects`';
+$sql[] = 'DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'mailtplvars_subjects_lang`';
 
 $result = true;
 
