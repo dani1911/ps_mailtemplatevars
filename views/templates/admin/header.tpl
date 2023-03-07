@@ -44,12 +44,9 @@
 <span>- $topic = $result["osname"];</span>
 <span>+ $topic = (isset($result["subject"]) && !empty($result["subject"])) ? $result["subject"] : $result["osname"];'</span></pre>
 			<p>{$notice2}</p>
-<!-- TODO variables below -->
-			<pre>
-				if (isset($logo)) {
-					$templateVars['{shop_logo}'] = $message->embed(\Swift_Image::fromPath($logo));
-				}',
-			</pre>
+			<pre>if (isset($logo)) {
+	$templateVars['{ldelim}shop_logo{rdelim}'] = $message->embed(\Swift_Image::fromPath($logo));
+}';</pre>
 		</div>
 	</div>
 </div>
