@@ -14,8 +14,11 @@
  	/**
  	 * Fields
  	 */
-	public $id_order_state;
+	public $id;
 	public $subject;
+
+	/** @var bool Enables to define an ID before adding object. */
+	public $force_id = true;
 
 	/**
 	 * Definition
@@ -23,24 +26,11 @@
 	 */
 	public static $definition = [
 		'table' => 'mailtplvars_subjects',
-		'primary' => 'id_order_state',
+		'primary' => 'id',
 		'multilang' => true,
 		'fields' => [
-			'id_order_state' => ['type' => self::TYPE_INT],
-			'subject' => ['type' => self::TYPE_STRING, 'lang' => true],
+			'id' => ['type' => self::TYPE_INT, 'validate' => 'isUnsignedInt', 'required' => false],
+			'subject' => ['type' => self::TYPE_STRING, 'lang' => true, 'validate' => 'isGenericName', 'size' => 155],
 		]
 	];
-
-	public function getSubjectByOrderState($id_order_state)
-	{
-        $sql = 'SELECT msl.`subject` FROM `' . _DB_PREFIX_ . 'mailtplvars_subjects_lang` msl
-		WHERE msl.`id_order_state` = ' . (int)$id_order_state;
-
-		if ($result = Db::getInstance()->executeS($sql))
-		{
-            return $result;
-        }
-
-        return false;
-    }
 }

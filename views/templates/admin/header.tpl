@@ -30,7 +30,7 @@
 		</div>
 		<div class="col-xs-7 text-left">
 			<h2>{l s='E-mail template variables' d='Modules.Mailtemplatevars.Settings'}</h2>
-			<h4>{l s='Add various e-mail variables to various e-mail templates and the possibility to add custom e-mail subjects to order transactional e-mails.' d='Modules.Mailtemplatevars.Settings'}</h4>
+			<h4>{l s='Add various e-mail variables to various e-mail templates and the possibility to add custom e-mail subjects to order states e-mails.' d='Modules.Mailtemplatevars.Settings'}</h4>
 			<ul class="ul-spaced">
 				<li><strong>{l s='Author' d='Modules.Mailtemplatevars.Settings'}: {$author}</strong></li>
 				<li>{l s='Contact' d='Modules.Mailtemplatevars.Settings'}: <a href="mailto:dani.strba@gmail.com">dani.strba@gmail.com</a></li>
@@ -38,7 +38,18 @@
 				<li>{l s='Created' d='Modules.Mailtemplatevars.Settings'}: 23/02/2023</li>
 			</ul>
 			<p>{$notice}</p>
-			<pre>{$code}</pre>
+			<pre><span>- SELECT osl.`template`, c.`lastname`, c.`firstname`, osl.`name` AS osname, c.`email`, os.`module_name`, os.`id_order_state`, os.`pdf_invoice`, os.`pdf_delivery`</span>
+<span>+ SELECT osl.`template`, c.`lastname`, c.`firstname`, osl.`name` AS osname, c.`email`, os.`module_name`, os.`id_order_state`, os.`pdf_invoice`, os.`pdf_delivery`, msl.`subject`</span>
+<span>+ LEFT JOIN `" . _DB_PREFIX_ . "mailtplvars_subjects_lang` msl ON (os.`id_order_state` = msl.`id` AND msl.`id_lang` = o.`id_lang`)</span>
+<span>- $topic = $result["osname"];</span>
+<span>+ $topic = (isset($result["subject"]) && !empty($result["subject"])) ? $result["subject"] : $result["osname"];'</span></pre>
+			<p>{$notice2}</p>
+<!-- TODO variables below -->
+			<pre>
+				if (isset($logo)) {
+					$templateVars['{shop_logo}'] = $message->embed(\Swift_Image::fromPath($logo));
+				}',
+			</pre>
 		</div>
 	</div>
 </div>

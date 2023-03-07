@@ -106,14 +106,16 @@ class mailTemplateVars extends Module
 
             if (!$update) {
                 $output = $this->displayError($this->trans('An error occurred on saving.', [], 'Modules.Mailtemplatevars.Settings'));
+            } else {
+                $output = $this->displayConfirmation($this->trans('E-mail subjects updated sucessfully.', [], 'Modules.Mailtemplatevars.Settings'));
             }
         }
 
 		$this->context->smarty->assign([
 			'author' => $this->author,
 			'module_version' => $this->version,
-            'notice' => $this->trans('For this to work you need to make an override of OrderHistory.php sendMail function and make the following changes', [], 'Modules.Mailtemplatevars.Settings'),
-            'code' => '33 - SELECT osl.`template`, c.`lastname`, c.`firstname`, osl.`name` AS osname, c.`email`, os.`module_name`, os.`id_order_state`, os.`pdf_invoice`, os.`pdf_delivery`<br>33 + SELECT osl.`template`, c.`lastname`, c.`firstname`, osl.`name` AS osname, c.`email`, os.`module_name`, os.`id_order_state`, os.`pdf_invoice`, os.`pdf_delivery`, msl.`subject`<br>39 + LEFT JOIN `" . _DB_PREFIX_ . "mailtplvars_subjects_lang` msl ON (os.`id_order_state` = msl.`id_order_state` AND msl.`id_lang` = o.`id_lang`)<br>44 - $topic = $result["osname"];<br>44 + $topic = (isset($result["subject"]) && !empty($result["subject"])) ? $result["subject"] : $result["osname"];'
+            'notice' => $this->trans('For this to work you need to make an override of OrderHistory.php sendEmail function and make the following changes', [], 'Modules.Mailtemplatevars.Settings'),
+            'notice2' => $this->trans('Also if you do not wish your logo to be sent as attachemnt, comment out the following lines inside Mail.php file', [], 'Modules.Mailtemplatevars.Settings'),
 		]);
 
 		// display any message, then the form
@@ -122,23 +124,42 @@ class mailTemplateVars extends Module
 
     public function processSaveMailSubject()
     {
-        $order_states = $this->getAllOrderStates();
-        
-        $subj = [];
-        foreach ($order_states as $order_state)
+        $result = true;
+        $os = [];
+        foreach ($_POST as $key => $entry)
         {
-            $languages = Language::getLanguages(false);
-            foreach ($languages as $lang)
+            if (substr($key, 0 , 3) === "OS_")
             {
-                $subj[$lang['id_lang']] = (string) $_POST['OS-' . $order_state['id_order_state'] . '_' . $lang['id_lang']];
-                $saved = true;
-                $subject = new mailSubject($order_state['id_order_state']);
-                $subject->subject = $subj;
-                $saved &= $subject->save();
+                $key = explode('_', $key);
+                $order_state = $key[1];
+                $lang = $key[2];
+                
+                $os[$order_state]['order_state'] = $order_state;
+                $os[$order_state]['subject'][] = [
+                    'lang' => $lang,
+                    'subject' => $entry,
+                ];
             }
         }
 
-        return $saved;
+        foreach ($os as $state)
+        {
+            $subj = new mailSubject($order_state);
+
+            (isset($subj->id)) ? $subj : $subj = new mailSubject();
+            (isset($subj->id)) ? $store_method = 'update' : $store_method = 'add';
+
+            $subj->id = $state['order_state'];
+            foreach ($state['subject'] as $subj_lang)
+            {
+                $subj->subject[$subj_lang['lang']] = $subj_lang['subject'];
+            }
+
+            if (!$subj->$store_method()) 
+                $result = false;
+        }
+
+        return $result;
     }
 
     /**
@@ -155,7 +176,7 @@ class mailTemplateVars extends Module
             $inputs[] = [
                 'type' => 'text',
                 'label' => $order_state['name'],
-                'name' => 'OS-' . $order_state['id_order_state'],
+                'name' => 'OS_' . $order_state['id_order_state'],
                 'lang' => true,
             ];
 		};
@@ -206,7 +227,7 @@ class mailTemplateVars extends Module
         {
             $subject = new mailSubject((int)$order_state['id_order_state']);
     
-            $fields_value['OS-' . $order_state['id_order_state']] = $subject->subject;
+            $fields_value['OS_' . $order_state['id_order_state']] = $subject->subject;
         }
 
         return $fields_value;
@@ -228,7 +249,7 @@ class mailTemplateVars extends Module
                 $params['templateVars']['{products_txt}'] = $order_data_tpl['product_list_txt'];
                 $params['templateVars']['{discounts}'] = $order_data_tpl['cart_rules_list_html'];
                 $params['templateVars']['{discounts_txt}'] = $order_data_tpl['cart_rules_list_txt'];
-                $params['templateVars']['{totals}'] = $order_data_tpl['summary'];
+                $params['templateVars']['{totals}'] = $order_data_tpl['summary_html'];
                 $params['templateVars']['{totals_txt}'] = $order_data_tpl['summary_txt'];
                 $params['templateVars']['{payment}'] = $order_data_tpl['order']->payment;
                 $params['templateVars']['{order_url}'] = $order_data_tpl['order_url'];
@@ -245,7 +266,7 @@ class mailTemplateVars extends Module
     {
         if ($params['template'] != 'order_conf')
         {
-            $context = Context::getContext();
+            // $context = Context::getContext();
             $order_data_tpl = self::getOrderData($params['template_vars']['{order_name}']);
 
             if ($params['template'] == 'backoffice_order' || $params['template'] == 'order_changed')
@@ -256,7 +277,7 @@ class mailTemplateVars extends Module
                 $params['template_vars']['{products_txt}'] = $order_data_tpl['product_list_txt'];
                 $params['template_vars']['{discounts}'] = $order_data_tpl['cart_rules_list_html'];
                 $params['template_vars']['{discounts_txt}'] = $order_data_tpl['cart_rules_list_txt'];
-                $params['template_vars']['{totals}'] = $order_data_tpl['summary'];
+                $params['template_vars']['{totals}'] = $order_data_tpl['summary_html'];
                 $params['template_vars']['{totals_txt}'] = $order_data_tpl['summary_txt'];
                 $params['template_vars']['{delivery_block_txt}'] = $this->_getFormatedAddress($order_data_tpl['delivery'], AddressFormat::FORMAT_NEW_LINE);
                 $params['template_vars']['{invoice_block_txt}'] = $this->_getFormatedAddress($order_data_tpl['invoice'], AddressFormat::FORMAT_NEW_LINE);
@@ -298,6 +319,9 @@ class mailTemplateVars extends Module
                 'payment_error',
                 'preparation',
                 'shipped',
+                'ecardvub_awaiting',
+                'eplatbyvub_awaiting',
+                'eplatbyvub_unknown',
             ];
             if (in_array($params['template'], $order_btn_templates))
             {
@@ -329,11 +353,10 @@ class mailTemplateVars extends Module
         $order_data = $db->getRow($query);
 
         $order = new Order ($order_data['id_order']);
-        // $order_lang = new Language((int)$order->id_lang);
+        Context::getContext()->language = new Language((int)$order->id_lang);
         $delivery = new Address ($order_data['id_address_delivery']);
         $invoice = new Address ($order_data['id_address_invoice']);
         $carrier = $order->id_carrier ? new Carrier($order->id_carrier) : false;
-        // $cart = new Cart ($order_data['id_cart']);
 
         $ProductDetailObject = new OrderDetail;
         $products = $ProductDetailObject->getList($order->id);
@@ -407,8 +430,8 @@ class mailTemplateVars extends Module
             'total_tax_paid' => self::formatMailPrice($order->total_paid_tax_incl - $order->total_paid_tax_excl), // TODO check if this calculation suffices
             'total_paid' => self::formatMailPrice($order->total_paid_tax_incl),
         ];
-        $summary = $this->getEmailTemplateContent('summary_list.tpl', Mail::TYPE_HTML, $totals);
-        $summary_txt = $this->getEmailTemplateContent('summary_list.txt', Mail::TYPE_TEXT, $totals);
+        $summary_txt = $this->getEmailTemplateContent('order_conf_summary.txt', Mail::TYPE_TEXT, $totals);
+        $summary_html = $this->getEmailTemplateContent('order_conf_summary.tpl', Mail::TYPE_HTML, $totals);
 
         $base_uri = Context::getContext()->shop->getBaseURL(true);
         $order_url = $base_uri . "?controller=order-detail&id_order=" . $order->id;
@@ -422,8 +445,8 @@ class mailTemplateVars extends Module
             'product_list_html' => $product_list_html,
             'cart_rules_list_txt' => $cart_rules_list_txt,
             'cart_rules_list_html' => $cart_rules_list_html,
-            'summary' => $summary,
             'summary_txt' => $summary_txt,
+            'summary_html' => $summary_html,
             'tracking_number' => $order->getWsShippingNumber(),
             'order_url' => $order_url,
         ];

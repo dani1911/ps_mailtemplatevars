@@ -31,15 +31,15 @@ if (!defined(_MYSQL_ENGINE_)) {
 $sql = [];
 
 $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'mailtplvars_subjects` (
-				`id_order_state` INT UNSIGNED NOT NULL,
-		PRIMARY KEY (`id_order_state`)
+				`id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+		PRIMARY KEY (`id`)
 ) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
 
 $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'mailtplvars_subjects_lang` (
-				`id_order_state` int UNSIGNED NOT NULL,
+				`id` int UNSIGNED NOT NULL,
 				`id_lang` int UNSIGNED NOT NULL,
-				`subject` varchar(55),
-		PRIMARY KEY (`id_order_state`, `id_lang`)
+				`subject` varchar(155),
+		PRIMARY KEY (`id`, `id_lang`)
 ) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
 
 $result = true;
