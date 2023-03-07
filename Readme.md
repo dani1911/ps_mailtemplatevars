@@ -24,3 +24,4 @@ Initial release
 - [+] various variables added to various e-mail templates
 - [+] created new variables for order summery table and order url
 - [+] reworked the order_conf_cart_rule file
+- [+] added order_conf_summary file to show custom order summary details
