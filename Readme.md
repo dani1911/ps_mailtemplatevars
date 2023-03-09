@@ -54,6 +54,4 @@ Below is list of new variables and template files that can use them:
 | {total_paid} | bankwire |
 | {carrier} | in_transit |
 | {tracking_number} | in_transit |
-| {products_pre} | preorder |
-| {products_pre_txt} | preorder |
-| {order_url} | backoffice_order, order_changed, bankwire, in_transit, order_canceled, order_merchant_comment, order_ready_pickup, outofstock, payment, payment_error, preorder, preparation, shipped |
+| {order_url} | backoffice_order, bankwire, in_transit, order_canceled, order_changed, order_conf, order_merchant_comment, outofstock, payment, payment_error, preparation, shipped |
