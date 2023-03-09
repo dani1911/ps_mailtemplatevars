@@ -309,6 +309,12 @@ class mailTemplateVars extends Module
                 $params['template_vars']['{order_url}'] = $order_data_tpl['order_url'];
             }
     
+            if ($params['template'] = 'preorder')
+            {
+                $params['template_vars']['{products_pre}'] = $order_data_tpl['products_pre_html'];
+                $params['template_vars']['{products_pre_txt}'] = $order_data_tpl['products_pre_txt'];
+            }
+
             $order_btn_templates = [
                 'custom_case',
                 'order_canceled',
@@ -317,6 +323,7 @@ class mailTemplateVars extends Module
                 'outofstock',
                 'payment',
                 'payment_error',
+                'preorder',
                 'preparation',
                 'shipped',
                 'ecardvub_awaiting',
@@ -364,6 +371,7 @@ class mailTemplateVars extends Module
         foreach ($products as $product)
         {
             // $product['product_attribute_id']; TODO get attribute name, maybe not even necessary
+            $prod = new Product ((int) $product['product_id']);
 
             $product_var_tpl = [
                 'reference' => $product['product_reference'],
@@ -372,6 +380,7 @@ class mailTemplateVars extends Module
                 'quantity' => $product['product_quantity'],
                 'price' => self::formatMailPrice($product['total_price_tax_incl']),
                 'customization' => [],
+                'availability_date' => $prod->available_date,
             ];
 
             $customized_datas = Product::getAllCustomizedDatas((int) $order->id_cart, null, true, null, (int) $product['id_customization']);
@@ -404,6 +413,8 @@ class mailTemplateVars extends Module
 
         $product_list_txt = $this->getEmailTemplateContent('order_conf_product_list.txt', Mail::TYPE_TEXT, $product_var_tpl_list);
         $product_list_html = $this->getEmailTemplateContent('order_conf_product_list.tpl', Mail::TYPE_HTML, $product_var_tpl_list);
+        $product_pre_list_txt = $this->getEmailTemplateContent('order_product_pre_list.txt', Mail::TYPE_TEXT, $product_var_tpl_list);
+        $product_pre_list_html = $this->getEmailTemplateContent('order_product_pre_list.tpl', Mail::TYPE_HTML, $product_var_tpl_list);
 
         $cart_rules = $order->getCartRules();
         $cart_var_tpl_list = [];
@@ -443,6 +454,8 @@ class mailTemplateVars extends Module
             'carrier' => $carrier,
             'product_list_txt' => $product_list_txt,
             'product_list_html' => $product_list_html,
+            'products_pre_txt' => $product_pre_list_txt,
+            'products_pre_html' => $product_pre_list_html,
             'cart_rules_list_txt' => $cart_rules_list_txt,
             'cart_rules_list_html' => $cart_rules_list_html,
             'summary_txt' => $summary_txt,
