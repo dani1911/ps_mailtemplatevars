@@ -291,7 +291,6 @@ class mailTemplateVars extends Module
                 ]);
                 $params['template_vars']['{carrier}'] = (!isset($order_data_tpl['carrier']->name)) ? $this->trans('No carrier', [], 'Modules.Mailtemplatevars.Mail') : $order_data_tpl['carrier']->name;
                 $params['template_vars']['{payment}'] = $order_data_tpl['order']->payment;
-                $params['template_vars']['{order_url}'] = $order_data_tpl['order_url'];
             }
             
             if ($params['template'] == 'bankwire')
@@ -299,14 +298,12 @@ class mailTemplateVars extends Module
                 $params['template_vars']['{bankwire_owner}'] = Configuration::get('BANK_WIRE_OWNER');
                 $params['template_vars']['{bankwire_details}'] = nl2br(Configuration::get('BANK_WIRE_DETAILS') ?: '');
                 $params['template_vars']['{total_paid}'] = self::formatMailPrice($order_data_tpl['order']->total_paid_tax_incl);
-                $params['template_vars']['{order_url}'] = $order_data_tpl['order_url'];
             }
     
             if ($params['template'] == 'in_transit')
             {
                 $params['template_vars']['{carrier}'] = $order_data_tpl['carrier']->name;
                 $params['template_vars']['{tracking_number}'] = $order_data_tpl['tracking_number'];
-                $params['template_vars']['{order_url}'] = $order_data_tpl['order_url'];
             }
     
             if ($params['template'] = 'preorder')
@@ -316,8 +313,12 @@ class mailTemplateVars extends Module
             }
 
             $order_btn_templates = [
+                'backoffice_order',
+                'bankwire',
                 'custom_case',
+                'in_transit',
                 'order_canceled',
+                'order_changed',
                 'order_merchant_comment',
                 'order_ready_pickup',
                 'outofstock',
@@ -371,7 +372,7 @@ class mailTemplateVars extends Module
         foreach ($products as $product)
         {
             // $product['product_attribute_id']; TODO get attribute name, maybe not even necessary
-            $prod = new Product ((int) $product['product_id']);
+            $prod = new Product((int) $product['product_id']);
 
             $product_var_tpl = [
                 'reference' => $product['product_reference'],
@@ -380,7 +381,7 @@ class mailTemplateVars extends Module
                 'quantity' => $product['product_quantity'],
                 'price' => self::formatMailPrice($product['total_price_tax_incl']),
                 'customization' => [],
-                'availability_date' => $prod->available_date,
+                'availability_date' => Tools::displayDate($prod->available_date, null, 0),
             ];
 
             $customized_datas = Product::getAllCustomizedDatas((int) $order->id_cart, null, true, null, (int) $product['id_customization']);
